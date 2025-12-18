@@ -237,9 +237,40 @@
     <script src="js/firebase-config.js"></script>
     <script src="js/auth.js"></script>
     <script>
+        // Simple toast function for auth page
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) {
+                alert(message);
+                return;
+            }
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                <span class="toast-icon">${type === 'success' ? '✓' : type === 'error' ? '✗' : 'ℹ'}</span>
+                <span class="toast-message">${message}</span>
+            `;
+            toast.style.cssText = `
+                display: flex; align-items: center; gap: 10px;
+                padding: 12px 20px; margin-bottom: 10px;
+                background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+                color: white; border-radius: 10px; font-size: 14px;
+                animation: slideIn 0.3s ease;
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
         // Initialize effects
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof initEffects === 'function') initEffects();
+
+            console.log('🔐 Auth page loaded');
+            console.log('Firebase Auth:', window.firebaseAuth ? 'Available' : 'Not available (Demo mode)');
 
             // Tab switching
             const tabs = document.querySelectorAll('.auth-tab');
