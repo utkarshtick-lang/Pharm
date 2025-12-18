@@ -328,9 +328,7 @@
                         if (window.firebaseAuth && window.googleProvider) {
                             const result = await window.firebaseAuth.signInWithPopup(window.googleProvider);
                             console.log('✅ Google sign-in success:', result.user.displayName);
-                            if (typeof showToast === 'function') {
-                                showToast(`Welcome, ${result.user.displayName}!`, 'success');
-                            }
+                            showToast(`Welcome, ${result.user.displayName}!`, 'success');
                             setTimeout(() => {
                                 window.location.href = 'index.html';
                             }, 1000);
@@ -343,18 +341,27 @@
                                 uid: 'google-demo-' + Date.now()
                             };
                             localStorage.setItem('demo_user', JSON.stringify(demoUser));
-                            if (typeof showToast === 'function') {
-                                showToast('Welcome, Google User! (Demo Mode)', 'success');
-                            }
+                            showToast('Welcome, Google User! (Demo Mode)', 'success');
                             setTimeout(() => {
                                 window.location.href = 'index.html';
                             }, 1000);
                         }
                     } catch (error) {
-                        console.error('Google sign-in error:', error);
-                        if (typeof showToast === 'function') {
+                        console.error('Google sign-in error:', error.code, error.message);
+
+                        // Don't show error for popup closed by user or cancelled
+                        const ignoredErrors = [
+                            'auth/popup-closed-by-user',
+                            'auth/cancelled-popup-request',
+                            'auth/popup-blocked'
+                        ];
+
+                        if (!ignoredErrors.includes(error.code)) {
                             showToast('Sign-in failed: ' + error.message, 'error');
+                        } else if (error.code === 'auth/popup-blocked') {
+                            showToast('Popup was blocked. Please allow popups for this site.', 'error');
                         }
+
                         googleBtn.disabled = false;
                         googleBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
