@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Browse our complete catalog of medications, vitamins, and wellness products at Shreya Pharmacy.">
+    <title>Products | Shreya Pharmacy</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .page-header {
+            padding: 8rem 2rem 4rem;
+            text-align: center;
+            background: var(--gradient-dark);
+        }
+
+        .page-title {
+            font-family: var(--font-display);
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .page-subtitle {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .products-page {
+            padding: 4rem 2rem;
+            background: var(--bg-dark);
+            min-height: 60vh;
+        }
+
+        .products-layout {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 2rem;
+        }
+
+        .filters-sidebar {
+            position: sticky;
+            top: 100px;
+            height: fit-content;
+        }
+
+        .filter-section {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .filter-option {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+
+        .filter-option:hover {
+            background: var(--bg-card);
+        }
+
+        .filter-option input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+        }
+
+        .price-range {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .price-input {
+            flex: 1;
+            min-width: 60px;
+            max-width: 80px;
+            padding: 0.5rem;
+            background: var(--bg-darker);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .price-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .products-main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .products-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .results-count {
+            color: var(--text-muted);
+        }
+
+        .sort-select {
+            padding: 0.6rem 1rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 3rem;
+        }
+
+        .page-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg);
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-btn:hover,
+        .page-btn.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: transparent;
+        }
+
+        @media (max-width: 900px) {
+            .products-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .filters-sidebar {
+                position: static;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+
+            .filter-section {
+                flex: 1;
+                min-width: 150px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .filters-sidebar {
+                flex-direction: column;
+            }
+
+            .filter-section {
+                min-width: 100%;
+            }
+
+            .price-range {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .price-input {
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Background Effects -->
+    <canvas id="cursor-trail"></canvas>
+    <canvas id="particle-bg"></canvas>
+
+    <!-- Navigation -->
+    <nav id="navbar" class="navbar scrolled">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">
+                <span class="logo-icon">💊</span>
+                <span class="logo-text">SHREYA</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="wholesale.html" class="nav-link">Wholesale</a></li>
+                <li><a href="products.html" class="nav-link">Products</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+            </ul>
+            <div class="nav-actions">
+                <a href="cart.html" class="nav-btn cart-btn" aria-label="Cart">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1" />
+                        <circle cx="20" cy="21" r="1" />
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                    </svg>
+                    <span class="cart-count">0</span>
+                </a>
+                <a href="auth.html" class="nav-btn auth-btn magnetic-btn">
+                    <span>Sign In</span>
+                </a>
+            </div>
+            <button class="mobile-menu-btn" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="page-header">
+        <h1 class="page-title">Our <span class="gradient-text">Products</span></h1>
+        <p class="page-subtitle">Browse our complete catalog of premium pharmaceuticals, vitamins, and wellness products
+        </p>
+    </header>
+
+    <!-- Products Section -->
+    <section class="products-page">
+        <div class="products-layout">
+            <!-- Filters Sidebar -->
+            <aside class="filters-sidebar">
+                <div class="filter-section">
+                    <h3 class="filter-title">🏷️ Categories</h3>
+                    <div class="filter-options">
+                        <label class="filter-option">
+                            <input type="checkbox" checked data-category="all">
+                            <span>All Products</span>
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox" data-category="prescription">
+                            <span>Prescription</span>
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox" data-category="otc">
+                            <span>Over the Counter</span>
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox" data-category="vitamins">
+                            <span>Vitamins</span>
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox" data-category="wellness">
+                            <span>Wellness</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="filter-section">
+                    <h3 class="filter-title">💰 Price Range</h3>
+                    <div class="price-range">
+                        <input type="number" class="price-input" placeholder="₹ Min" min="0">
+                        <span>—</span>
+                        <input type="number" class="price-input" placeholder="₹ Max" min="0">
+                    </div>
+                </div>
+
+                <div class="filter-section">
+                    <h3 class="filter-title">⭐ Rating</h3>
+                    <div class="filter-options">
+                        <label class="filter-option">
+                            <input type="checkbox">
+                            <span>4+ Stars</span>
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox">
+                            <span>3+ Stars</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="filter-section">
+                    <h3 class="filter-title">📦 Availability</h3>
+                    <div class="filter-options">
+                        <label class="filter-option">
+                            <input type="checkbox" checked>
+                            <span>In Stock Only</span>
+                        </label>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Products Grid -->
+            <main class="products-main">
+                <div class="products-toolbar">
+                    <span class="results-count">Showing <strong>12</strong> products</span>
+                    <select class="sort-select">
+                        <option>Sort by: Featured</option>
+                        <option>Price: Low to High</option>
+                        <option>Price: High to Low</option>
+                        <option>Newest First</option>
+                        <option>Best Rated</option>
+                    </select>
+                </div>
+
+                <div class="product-grid" id="product-grid">
+                    <!-- Products loaded by JS -->
+                </div>
+
+                <div class="pagination">
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn">3</button>
+                    <button class="page-btn">→</button>
+                </div>
+            </main>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <span class="logo-icon">💊</span>
+                        <span class="logo-text">SHREYA</span>
+                    </div>
+                    <p class="footer-tagline">The Future of Healthcare Commerce</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="products.html">Shop All</a></li>
+                        <li><a href="wholesale.html">Wholesale</a></li>
+                        <li><a href="about.html">About Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">FAQs</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2045 Shreya Pharmacy. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/effects.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/components.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof initEffects === 'function') initEffects();
+            if (typeof renderProducts === 'function') renderProducts();
+            cart.load();
+        });
+    </script>
+    <script src="js/enhancements.js"></script>
+</body>
+
+</html>

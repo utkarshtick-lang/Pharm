@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Learn about Shreya Pharmacy - our mission, team, and commitment to healthcare excellence.">
+    <title>About Us | Shreya Pharmacy</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .page-header {
+            padding: 8rem 2rem 4rem;
+            text-align: center;
+            background: var(--gradient-dark);
+        }
+
+        .page-title {
+            font-family: var(--font-display);
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .about-content {
+            padding: 4rem 2rem;
+            background: var(--bg-dark);
+        }
+
+        .about-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .about-section {
+            margin-bottom: 4rem;
+        }
+
+        .about-section h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .about-section p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .mission-statement {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 3rem;
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .mission-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .mission-statement h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .mission-statement p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 4rem;
+        }
+
+        .value-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 2rem;
+            transition: transform 0.3s;
+        }
+
+        .value-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .value-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .value-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .value-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .team-section {
+            margin-bottom: 4rem;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2rem;
+        }
+
+        .team-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .team-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .team-avatar {
+            width: 100px;
+            height: 100px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin: 0 auto 1.5rem;
+        }
+
+        .team-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .team-role {
+            color: var(--primary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .team-bio {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            padding: 3rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            margin-bottom: 4rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-family: var(--font-display);
+            font-size: 3rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .certifications {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            justify-content: center;
+            padding: 2rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+        }
+
+        .cert-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 1.5rem;
+            background: rgba(196, 167, 125, 0.1);
+            border-radius: 50px;
+        }
+
+        .cert-icon {
+            font-size: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .stats-section {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="cursor-trail"></canvas>
+    <canvas id="particle-bg"></canvas>
+
+    <!-- Navigation -->
+    <nav id="navbar" class="navbar scrolled">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">
+                <span class="logo-icon">💊</span>
+                <span class="logo-text">SHREYA</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="wholesale.html" class="nav-link">Wholesale</a></li>
+                <li><a href="products.html" class="nav-link">Products</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+            </ul>
+            <div class="nav-actions">
+                <a href="cart.html" class="nav-btn cart-btn" aria-label="Cart">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1" />
+                        <circle cx="20" cy="21" r="1" />
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                    </svg>
+                    <span class="cart-count">0</span>
+                </a>
+                <a href="auth.html" class="nav-btn auth-btn magnetic-btn">
+                    <span>Sign In</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="page-header">
+        <h1 class="page-title">About <span class="gradient-text">Shreya Pharmacy</span></h1>
+        <p class="page-subtitle" style="color: var(--text-muted); max-width: 600px; margin: 0 auto;">Pioneering the
+            future of healthcare commerce since 2025</p>
+    </header>
+
+    <!-- Content -->
+    <section class="about-content">
+        <div class="about-container">
+
+            <!-- Mission -->
+            <div class="mission-statement">
+                <div class="mission-icon">🎯</div>
+                <h2>Our Mission</h2>
+                <p>To make healthcare accessible to everyone through innovative technology, competitive pricing, and
+                    exceptional service. We believe everyone deserves access to quality medications.</p>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-section">
+                <div class="stat-item">
+                    <div class="stat-number" data-target="50000">50K+</div>
+                    <div class="stat-label">Happy Customers</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" data-target="10000">10K+</div>
+                    <div class="stat-label">Products</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" data-target="99">99%</div>
+                    <div class="stat-label">Order Accuracy</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" data-target="24">24/7</div>
+                    <div class="stat-label">Support</div>
+                </div>
+            </div>
+
+            <!-- Values -->
+            <div class="about-section">
+                <h2 style="text-align: center; margin-bottom: 2rem;">Our <span class="gradient-text">Values</span></h2>
+                <div class="values-grid">
+                    <div class="value-card">
+                        <div class="value-icon">🔬</div>
+                        <h3>Quality First</h3>
+                        <p>Every product is sourced from verified manufacturers and undergoes rigorous quality checks.
+                        </p>
+                    </div>
+                    <div class="value-card">
+                        <div class="value-icon">💡</div>
+                        <h3>Innovation</h3>
+                        <p>We leverage cutting-edge technology to streamline the pharmaceutical supply chain.</p>
+                    </div>
+                    <div class="value-card">
+                        <div class="value-icon">🤝</div>
+                        <h3>Trust</h3>
+                        <p>Building lasting relationships through transparency, reliability, and integrity.</p>
+                    </div>
+                    <div class="value-card">
+                        <div class="value-icon">🌍</div>
+                        <h3>Accessibility</h3>
+                        <p>Making healthcare affordable and accessible to communities everywhere.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team -->
+            <div class="team-section">
+                <h2 style="text-align: center; margin-bottom: 2rem;">Meet Our <span class="gradient-text">Team</span>
+                </h2>
+                <div class="team-grid">
+                    <div class="team-card">
+                        <div class="team-avatar">👩‍💼</div>
+                        <h3 class="team-name">Shreya Mishra</h3>
+                        <p class="team-role">CEO & Founder</p>
+                        <p class="team-bio">Visionary leader driving innovation in healthcare delivery.</p>
+                    </div>
+                    <div class="team-card">
+                        <div class="team-avatar">👨‍⚕️</div>
+                        <h3 class="team-name">Shiv Ram Mishra</h3>
+                        <p class="team-role">Chief Medical Officer</p>
+                        <p class="team-bio">20+ years in pharmaceutical research and clinical practice.</p>
+                    </div>
+                    <div class="team-card">
+                        <div class="team-avatar">👨‍💻</div>
+                        <h3 class="team-name">Sunil Kumar</h3>
+                        <p class="team-role">Chief Technology Officer</p>
+                        <p class="team-bio">Tech visionary building the future of e-pharmacy.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Certifications -->
+            <div class="about-section">
+                <h2 style="text-align: center; margin-bottom: 2rem;">Certifications & <span
+                        class="gradient-text">Trust</span></h2>
+                <div class="certifications">
+                    <div class="cert-badge">
+                        <span class="cert-icon">🏥</span>
+                        <span>FDA Registered</span>
+                    </div>
+                    <div class="cert-badge">
+                        <span class="cert-icon">🔒</span>
+                        <span>HIPAA Compliant</span>
+                    </div>
+                    <div class="cert-badge">
+                        <span class="cert-icon">✅</span>
+                        <span>VIPPS Accredited</span>
+                    </div>
+                    <div class="cert-badge">
+                        <span class="cert-icon">🛡️</span>
+                        <span>SSL Secured</span>
+                    </div>
+                    <div class="cert-badge">
+                        <span class="cert-icon">⭐</span>
+                        <span>BBB A+ Rating</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-bottom">
+                <p>&copy; 2045 Shreya Pharmacy. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="js/data.js"></script>
+    <script src="js/effects.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof initEffects === 'function') initEffects();
+            cart.load();
+        });
+    </script>
+    <script src="js/enhancements.js"></script>
+</body>
+
+</html>

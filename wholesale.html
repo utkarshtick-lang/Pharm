@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Wholesale pharmaceutical solutions with tiered pricing and dedicated account management.">
+    <title>Wholesale | Shreya Pharmacy</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .page-header {
+            padding: 8rem 2rem 4rem;
+            text-align: center;
+            background: var(--gradient-dark);
+        }
+
+        .page-title {
+            font-family: var(--font-display);
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .wholesale-content {
+            padding: 4rem 2rem;
+            background: var(--bg-dark);
+        }
+
+        .wholesale-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .benefit-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .benefit-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(196, 167, 125, 0.15);
+        }
+
+        .benefit-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .benefit-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .benefit-desc {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .pricing-section {
+            margin-bottom: 4rem;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .pricing-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--glass-bg);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+        }
+
+        .pricing-table th,
+        .pricing-table td {
+            padding: 1.25rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .pricing-table th {
+            background: rgba(196, 167, 125, 0.1);
+            font-weight: 600;
+        }
+
+        .pricing-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .pricing-table tr:hover td {
+            background: rgba(196, 167, 125, 0.05);
+        }
+
+        .tier-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .tier-bronze {
+            background: #CD7F32;
+            color: white;
+        }
+
+        .tier-silver {
+            background: #C0C0C0;
+            color: #333;
+        }
+
+        .tier-gold {
+            background: #FFD700;
+            color: #333;
+        }
+
+        .tier-platinum {
+            background: linear-gradient(135deg, #E5E4E2, #A9A9A9);
+            color: #333;
+        }
+
+        .contact-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .contact-info h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .contact-info p {
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        .contact-details {
+            list-style: none;
+        }
+
+        .contact-details li {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            color: var(--text-muted);
+        }
+
+        .contact-details .icon {
+            font-size: 1.5rem;
+        }
+
+        .contact-form {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-field {
+            margin-bottom: 1rem;
+        }
+
+        .form-field label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-field input,
+        .form-field textarea,
+        .form-field select {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: var(--bg-darker);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-field input:focus,
+        .form-field textarea:focus,
+        .form-field select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-field textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--gradient-primary);
+            border: none;
+            border-radius: 50px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(196, 167, 125, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .contact-section {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="cursor-trail"></canvas>
+    <canvas id="particle-bg"></canvas>
+
+    <!-- Navigation -->
+    <nav id="navbar" class="navbar scrolled">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">
+                <span class="logo-icon">💊</span>
+                <span class="logo-text">SHREYA</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="wholesale.html" class="nav-link active">Wholesale</a></li>
+                <li><a href="products.html" class="nav-link">Products</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+            </ul>
+            <div class="nav-actions">
+                <a href="cart.html" class="nav-btn cart-btn" aria-label="Cart">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1" />
+                        <circle cx="20" cy="21" r="1" />
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                    </svg>
+                    <span class="cart-count">0</span>
+                </a>
+                <a href="auth.html" class="nav-btn auth-btn magnetic-btn">
+                    <span>Sign In</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="page-header">
+        <h1 class="page-title">Wholesale <span class="gradient-text">Solutions</span></h1>
+        <p class="page-subtitle" style="color: var(--text-muted); max-width: 600px; margin: 0 auto;">Bulk pharmaceutical
+            supplies with competitive pricing, dedicated support, and flexible payment terms</p>
+    </header>
+
+    <!-- Content -->
+    <section class="wholesale-content">
+        <div class="wholesale-container">
+            <!-- Benefits -->
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="benefit-icon">💰</div>
+                    <h3 class="benefit-title">Volume Discounts</h3>
+                    <p class="benefit-desc">Up to 40% off retail pricing with tiered volume discounts</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🚚</div>
+                    <h3 class="benefit-title">Priority Shipping</h3>
+                    <p class="benefit-desc">Free expedited shipping on orders over $500</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">👨‍💼</div>
+                    <h3 class="benefit-title">Dedicated Manager</h3>
+                    <p class="benefit-desc">Personal account manager for all your needs</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">💳</div>
+                    <h3 class="benefit-title">Net-30 Terms</h3>
+                    <p class="benefit-desc">Flexible payment terms for qualified accounts</p>
+                </div>
+            </div>
+
+            <!-- Pricing Tiers -->
+            <div class="pricing-section">
+                <div class="section-header">
+                    <h2 class="section-title">Pricing <span class="gradient-text">Tiers</span></h2>
+                    <p class="section-subtitle" style="color: var(--text-muted);">Unlock better pricing as your order
+                        volume grows</p>
+                </div>
+
+                <table class="pricing-table">
+                    <thead>
+                        <tr>
+                            <th>Tier</th>
+                            <th>Monthly Volume</th>
+                            <th>Discount</th>
+                            <th>Shipping</th>
+                            <th>Payment Terms</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="tier-badge tier-bronze">Bronze</span></td>
+                            <td>$0 - $2,500</td>
+                            <td>10% off</td>
+                            <td>Standard ($15)</td>
+                            <td>Net-15</td>
+                        </tr>
+                        <tr>
+                            <td><span class="tier-badge tier-silver">Silver</span></td>
+                            <td>$2,500 - $10,000</td>
+                            <td>20% off</td>
+                            <td>Free Standard</td>
+                            <td>Net-30</td>
+                        </tr>
+                        <tr>
+                            <td><span class="tier-badge tier-gold">Gold</span></td>
+                            <td>$10,000 - $50,000</td>
+                            <td>30% off</td>
+                            <td>Free Expedited</td>
+                            <td>Net-45</td>
+                        </tr>
+                        <tr>
+                            <td><span class="tier-badge tier-platinum">Platinum</span></td>
+                            <td>$50,000+</td>
+                            <td>40% off</td>
+                            <td>Free Priority</td>
+                            <td>Net-60</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Contact Form -->
+            <div class="contact-section">
+                <div class="contact-info">
+                    <h2>Ready to Get Started?</h2>
+                    <p>Fill out the form to apply for a wholesale account. Our team will review your application and get
+                        back to you within 24 hours.</p>
+
+                    <ul class="contact-details">
+                        <li><span class="icon">📞</span> 1-800-PHARMA-X</li>
+                        <li><span class="icon">✉️</span> wholesale@shreyapharmacy.com</li>
+                        <li><span class="icon">🕐</span> Mon-Fri, 9AM-6PM EST</li>
+                    </ul>
+                </div>
+
+                <form class="contact-form" id="wholesale-form">
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label>Business Name</label>
+                            <input type="text" required placeholder="Your Company">
+                        </div>
+                        <div class="form-field">
+                            <label>Contact Name</label>
+                            <input type="text" required placeholder="Your Name">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label>Email</label>
+                            <input type="email" required placeholder="you@company.com">
+                        </div>
+                        <div class="form-field">
+                            <label>Phone</label>
+                            <input type="tel" placeholder="(123) 456-7890">
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <label>Business Type</label>
+                        <select required>
+                            <option value="">Select your business type</option>
+                            <option>Pharmacy</option>
+                            <option>Hospital / Clinic</option>
+                            <option>Nursing Home</option>
+                            <option>Distributor</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label>Estimated Monthly Volume</label>
+                        <select required>
+                            <option value="">Select estimated volume</option>
+                            <option>Under $2,500</option>
+                            <option>$2,500 - $10,000</option>
+                            <option>$10,000 - $50,000</option>
+                            <option>Over $50,000</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label>Message (Optional)</label>
+                        <textarea placeholder="Tell us about your needs..."></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Submit Application</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer (simplified) -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-bottom">
+                <p>&copy; 2045 Shreya Pharmacy. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="js/data.js"></script>
+    <script src="js/effects.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof initEffects === 'function') initEffects();
+            cart.load();
+
+            // Form submission
+            document.getElementById('wholesale-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                showToast('Application submitted! We\'ll contact you within 24 hours.', 'success');
+                e.target.reset();
+            });
+        });
+    </script>
+    <script src="js/enhancements.js"></script>
+</body>
+
+</html>

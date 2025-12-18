@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="View your order history at Shreya Pharmacy">
+    <title>Order History | Shreya Pharmacy</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .page-header {
+            padding: 8rem 2rem 3rem;
+            text-align: center;
+            background: var(--gradient-dark);
+        }
+
+        .page-title {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 700;
+        }
+
+        .orders-page {
+            padding: 3rem 2rem;
+            background: var(--bg-dark);
+            min-height: 60vh;
+        }
+
+        .orders-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .orders-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            background: var(--glass-bg);
+            padding: 0.5rem;
+            border-radius: 15px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .orders-tab {
+            flex: 1;
+            padding: 0.8rem 1.5rem;
+            background: transparent;
+            border: none;
+            border-radius: 10px;
+            color: var(--text-muted);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .orders-tab.active {
+            background: var(--gradient-primary);
+            color: #fff;
+        }
+
+        .orders-tab:hover:not(.active) {
+            background: rgba(196, 167, 125, 0.1);
+        }
+
+        .order-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .order-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(196, 167, 125, 0.15);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .order-id {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .order-date {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .order-status {
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-delivered {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-processing {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-shipped {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-cancelled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .order-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .order-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: var(--bg-card);
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+        }
+
+        .order-item-icon {
+            font-size: 1.5rem;
+        }
+
+        .order-item-name {
+            font-weight: 500;
+        }
+
+        .order-item-qty {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .order-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .order-total {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .order-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            background: transparent;
+            color: var(--text);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .order-btn:hover {
+            background: var(--primary);
+            color: #fff;
+            border-color: transparent;
+        }
+
+        .order-btn.primary {
+            background: var(--gradient-primary);
+            color: #fff;
+            border: none;
+        }
+
+        .empty-orders {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-orders h3 {
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-orders p {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .shop-btn {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            background: var(--gradient-primary);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="cursor-trail"></canvas>
+    <canvas id="particle-bg"></canvas>
+
+    <!-- Navigation -->
+    <nav id="navbar" class="navbar scrolled">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">
+                <span class="logo-icon">💊</span>
+                <span class="logo-text">SHREYA</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="wholesale.html" class="nav-link">Wholesale</a></li>
+                <li><a href="products.html" class="nav-link">Products</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+            </ul>
+            <div class="nav-actions">
+                <a href="cart.html" class="nav-btn cart-btn" aria-label="Cart">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1" />
+                        <circle cx="20" cy="21" r="1" />
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                    </svg>
+                    <span class="cart-count">0</span>
+                </a>
+                <a href="auth.html" class="nav-btn auth-btn magnetic-btn">
+                    <span>Sign In</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="page-header">
+        <h1 class="page-title">Order <span class="gradient-text">History</span></h1>
+        <p class="page-subtitle" style="color: var(--text-muted); margin-top: 0.5rem;">Track and manage your orders</p>
+    </header>
+
+    <!-- Orders Content -->
+    <section class="orders-page">
+        <div class="orders-container">
+            <div class="orders-tabs">
+                <button class="orders-tab active" data-status="all">All Orders</button>
+                <button class="orders-tab" data-status="processing">Processing</button>
+                <button class="orders-tab" data-status="shipped">Shipped</button>
+                <button class="orders-tab" data-status="delivered">Delivered</button>
+            </div>
+
+            <div id="orders-list">
+                <!-- Sample orders - in real app would come from database -->
+                <div class="order-card reveal" data-status="delivered">
+                    <div class="order-header">
+                        <div>
+                            <div class="order-id">Order #SPH-2024-001</div>
+                            <div class="order-date">December 15, 2024</div>
+                        </div>
+                        <span class="order-status status-delivered">Delivered</span>
+                    </div>
+                    <div class="order-items">
+                        <div class="order-item">
+                            <span class="order-item-icon">🧠</span>
+                            <div>
+                                <div class="order-item-name">NeuroMax Pro</div>
+                                <div class="order-item-qty">Qty: 2</div>
+                            </div>
+                        </div>
+                        <div class="order-item">
+                            <span class="order-item-icon">🛡️</span>
+                            <div>
+                                <div class="order-item-name">ImmunoBoost Ultra</div>
+                                <div class="order-item-qty">Qty: 1</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="order-footer">
+                        <div class="order-total">Total: ₹225.97</div>
+                        <div class="order-actions">
+                            <button class="order-btn">Track</button>
+                            <button class="order-btn primary">Reorder</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="order-card reveal" data-status="shipped">
+                    <div class="order-header">
+                        <div>
+                            <div class="order-id">Order #SPH-2024-002</div>
+                            <div class="order-date">December 17, 2024</div>
+                        </div>
+                        <span class="order-status status-shipped">Shipped</span>
+                    </div>
+                    <div class="order-items">
+                        <div class="order-item">
+                            <span class="order-item-icon">❤️</span>
+                            <div>
+                                <div class="order-item-name">CardioVitalis</div>
+                                <div class="order-item-qty">Qty: 1</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="order-footer">
+                        <div class="order-total">Total: ₹124.99</div>
+                        <div class="order-actions">
+                            <button class="order-btn primary">Track Package</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="order-card reveal" data-status="processing">
+                    <div class="order-header">
+                        <div>
+                            <div class="order-id">Order #SPH-2024-003</div>
+                            <div class="order-date">December 17, 2024</div>
+                        </div>
+                        <span class="order-status status-processing">Processing</span>
+                    </div>
+                    <div class="order-items">
+                        <div class="order-item">
+                            <span class="order-item-icon">🌙</span>
+                            <div>
+                                <div class="order-item-name">SleepSync Night</div>
+                                <div class="order-item-qty">Qty: 3</div>
+                            </div>
+                        </div>
+                        <div class="order-item">
+                            <span class="order-item-icon">🦴</span>
+                            <div>
+                                <div class="order-item-name">FlexiJoint Plus</div>
+                                <div class="order-item-qty">Qty: 1</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="order-footer">
+                        <div class="order-total">Total: ₹161.96</div>
+                        <div class="order-actions">
+                            <button class="order-btn">Cancel</button>
+                            <button class="order-btn">View Details</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-bottom">
+                <p>&copy; 2045 Shreya Pharmacy. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="js/data.js"></script>
+    <script src="js/effects.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/enhancements.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof initEffects === 'function') initEffects();
+            cart.load();
+
+            // Tab filtering
+            const tabs = document.querySelectorAll('.orders-tab');
+            const orders = document.querySelectorAll('.order-card');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    const status = tab.dataset.status;
+
+                    orders.forEach(order => {
+                        if (status === 'all' || order.dataset.status === status) {
+                            order.style.display = 'block';
+                        } else {
+                            order.style.display = 'none';
+                        }
+                    });
+                });
+            });
+
+            // Reorder button
+            document.querySelectorAll('.order-btn.primary').forEach(btn => {
+                if (btn.textContent.includes('Reorder')) {
+                    btn.addEventListener('click', () => {
+                        showToast('Items added to cart!', 'success');
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
