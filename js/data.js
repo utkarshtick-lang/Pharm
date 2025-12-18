@@ -264,7 +264,7 @@ const cart = {
             <div class="cart-item-image">${item.icon}</div>
             <div class="cart-item-info">
               <div class="cart-item-name">${item.name}</div>
-              <div class="cart-item-price">$${item.price.toFixed(2)} × ${item.quantity}</div>
+              <div class="cart-item-price">₹${item.price.toFixed(2)} × ${item.quantity}</div>
             </div>
             <button class="cart-item-remove" onclick="cart.remove(${item.id})">×</button>
           </div>
@@ -275,7 +275,7 @@ const cart = {
         // Update total
         const totalEl = document.querySelector('.total-amount');
         if (totalEl) {
-            totalEl.textContent = `$${this.getTotal().toFixed(2)}`;
+            totalEl.textContent = `₹${this.getTotal().toFixed(2)}`;
         }
     }
 };
